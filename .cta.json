@@ -7,9 +7,9 @@
   "git": true,
   "install": true,
   "addOnOptions": {},
-  "includeExamples": true,
+  "includeExamples": false,
   "envVarValues": {},
-  "routerOnly": false,
+  "routerOnly": true,
   "version": 1,
   "framework": "react",
   "chosenAddOns": []
