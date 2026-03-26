@@ -8,8 +8,16 @@ but using
 - React (https://react.dev/) for the frontend + Vite (https://vitejs.dev/) for the build system
 - Tanstack Router
 - Better Auth
-- tailwindcss
-- 
+- tailwindcss/shadcn/ui for the UI components
   
 App 
 - Todo App
+- Minimal Clean Architecture, no need domain, just service/repository
+
+## Project Example
+
+you can see example project in another variant at just for example no need to follow it exactly, you can use your own structure as long as it follows the goal above: _ref/thaitype-stack-mongodb-template
+
+## Draft Elysia Code
+
+located at _ref/draft
