@@ -1,0 +1,12 @@
+{
+  "name": "thaitype-stack-spa-react-elysia-prisma-template",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
