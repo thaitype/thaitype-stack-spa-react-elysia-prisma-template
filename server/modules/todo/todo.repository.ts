@@ -1,28 +1,11 @@
-import type { PrismaClient } from "../../../generated/client/client.ts";
+import type { PrismaClient, Todo } from "../../../generated/client/client.ts";
 import type { AppContext } from "../../context/app-context.ts";
 import type { ILogger } from "../../infrastructure/logging/index.ts";
 
-// Domain model
-export interface Todo {
-  id: string;
-  title: string;
-  description: string | null;
-  completed: boolean;
-  userId: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export type { Todo };
 
-export type CreateTodoData = {
-  title: string;
-  description?: string;
-};
-
-export type UpdateTodoData = {
-  title?: string;
-  description?: string;
-  completed?: boolean;
-};
+export type CreateTodoData = Pick<Todo, 'title'> & Partial<Pick<Todo, 'description'>>;
+export type UpdateTodoData = Partial<Pick<Todo, 'title' | 'description' | 'completed'>>;
 
 // Contract — service depends on this, not the concrete class
 export interface ITodoRepository {
