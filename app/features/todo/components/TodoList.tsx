@@ -2,9 +2,9 @@ import { useState } from "react"
 import { ClipboardListIcon, RefreshCwIcon } from "lucide-react"
 import { Button } from "#/components/ui/button"
 import { Badge } from "#/components/ui/badge"
-import { AddTodoForm } from "#/components/AddTodoForm"
-import { TodoItem } from "#/components/TodoItem"
-import { useGetTodos, type Todo } from "#/hooks/useTodos"
+import { AddTodoForm } from "./AddTodoForm"
+import { TodoItem } from "./TodoItem"
+import { useGetTodos, type Todo } from "../hooks/useTodos"
 
 type FilterType = "all" | "pending" | "completed"
 

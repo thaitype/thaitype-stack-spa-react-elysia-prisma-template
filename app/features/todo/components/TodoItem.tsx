@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "#/components/ui/dialog"
-import { useUpdateTodo, useDeleteTodo, type Todo } from "#/hooks/useTodos"
+import { useUpdateTodo, useDeleteTodo, type Todo } from "../hooks/useTodos"
 
 interface TodoItemProps {
   todo: Todo

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useSession } from '#/lib/auth-client'
-import { TodoList } from '#/components/TodoList'
+import { TodoList } from '#/features/todo'
 
 export const Route = createFileRoute('/')({ component: App })
 
