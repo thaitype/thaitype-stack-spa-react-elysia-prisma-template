@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { prisma } from "./lib/prisma";
+import { auth } from "./lib/auth";
 import { PrismaTodoRepository } from "./repositories/todo.repository";
 import { TodoService } from "./services/todo.service";
 import { TodoServiceError } from "./services/errors";
@@ -9,8 +10,12 @@ import { TodoServiceError } from "./services/errors";
 const todoRepo = new PrismaTodoRepository(prisma);
 const todoService = new TodoService(todoRepo);
 
-// Hardcoded userId until auth is implemented in task-4
-const TEMP_USER_ID = "temp-user-id";
+// --- Auth guard: extracts session from request, returns 401 if unauthenticated ---
+async function getSessionUser(request: Request): Promise<{ id: string } | null> {
+  const session = await auth.api.getSession({ headers: request.headers });
+  if (!session?.user) return null;
+  return session.user;
+}
 
 const app = new Elysia()
   .use(
@@ -35,12 +40,33 @@ const app = new Elysia()
   // --- health check ---
   .get("/api/health", () => ({ status: "ok" }))
 
-  // --- Todo routes ---
-  .get("/api/todos", ({ todoService }) => todoService.getAll(TEMP_USER_ID))
+  // --- Better Auth handler: handles all /api/auth/* routes ---
+  .all("/api/auth/*", ({ request }) => auth.handler(request))
+
+  // --- Todo routes (session-protected) ---
+  .get("/api/todos", async ({ todoService, request }) => {
+    const user = await getSessionUser(request);
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    return todoService.getAll(user.id);
+  })
 
   .get(
     "/api/todos/:id",
-    ({ todoService, params: { id } }) => todoService.getById(id, TEMP_USER_ID),
+    async ({ todoService, params: { id }, request }) => {
+      const user = await getSessionUser(request);
+      if (!user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      return todoService.getById(id, user.id);
+    },
     {
       params: t.Object({ id: t.String() }),
     },
@@ -48,7 +74,16 @@ const app = new Elysia()
 
   .post(
     "/api/todos",
-    ({ todoService, body }) => todoService.create(TEMP_USER_ID, body),
+    async ({ todoService, body, request }) => {
+      const user = await getSessionUser(request);
+      if (!user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      return todoService.create(user.id, body);
+    },
     {
       body: t.Object({
         title: t.String({ minLength: 1 }),
@@ -59,7 +94,16 @@ const app = new Elysia()
 
   .patch(
     "/api/todos/:id",
-    ({ todoService, params: { id }, body }) => todoService.update(id, TEMP_USER_ID, body),
+    async ({ todoService, params: { id }, body, request }) => {
+      const user = await getSessionUser(request);
+      if (!user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      return todoService.update(id, user.id, body);
+    },
     {
       params: t.Object({ id: t.String() }),
       body: t.Object({
@@ -72,8 +116,15 @@ const app = new Elysia()
 
   .delete(
     "/api/todos/:id",
-    async ({ todoService, params: { id } }) => {
-      await todoService.delete(id, TEMP_USER_ID);
+    async ({ todoService, params: { id }, request }) => {
+      const user = await getSessionUser(request);
+      if (!user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      await todoService.delete(id, user.id);
       return { success: true };
     },
     {

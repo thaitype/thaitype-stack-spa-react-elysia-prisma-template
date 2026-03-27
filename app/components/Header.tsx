@@ -1,7 +1,14 @@
 import { Link } from '@tanstack/react-router'
 import ThemeToggle from './ThemeToggle'
+import { useSession, signOut } from '#/lib/auth-client'
 
 export default function Header() {
+  const { data: session, isPending } = useSession()
+
+  async function handleSignOut() {
+    await signOut()
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--header-bg)] px-4 backdrop-blur-lg">
       <nav className="page-wrap flex flex-wrap items-center gap-x-3 gap-y-2 py-3 sm:py-4">
@@ -71,6 +78,29 @@ export default function Header() {
           >
             Docs
           </a>
+
+          {!isPending && (
+            <>
+              {session ? (
+                <div className="flex items-center gap-3">
+                  <span className="text-[var(--sea-ink-soft)]">{session.user.name}</span>
+                  <button
+                    onClick={handleSignOut}
+                    className="rounded-full border border-[rgba(23,58,64,0.2)] bg-white/50 px-3 py-1 text-xs font-semibold text-[var(--sea-ink)] transition hover:border-[rgba(23,58,64,0.35)] hover:bg-white/80"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className="rounded-full border border-[rgba(50,143,151,0.3)] bg-[rgba(79,184,178,0.14)] px-3 py-1 text-xs font-semibold text-[var(--lagoon-deep)] no-underline transition hover:bg-[rgba(79,184,178,0.24)]"
+                >
+                  Sign in
+                </Link>
+              )}
+            </>
+          )}
         </div>
       </nav>
     </header>
