@@ -1,8 +1,8 @@
 import type { ILogger } from '../infrastructure/logging/index.ts'
 import { createLogger } from '../infrastructure/logging/index.ts'
 import { prisma } from '../lib/prisma.ts'
-import { PrismaTodoRepository } from '../repositories/todo.repository.ts'
-import { TodoService } from '../services/todo.service.ts'
+import { PrismaTodoRepository } from '../modules/todo/todo.repository.ts'
+import { TodoService } from '../modules/todo/todo.service.ts'
 
 export interface AppConfig {
   environment: string

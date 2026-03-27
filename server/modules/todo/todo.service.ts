@@ -1,7 +1,7 @@
-import type { CreateTodoData, ITodoRepository, Todo, UpdateTodoData } from "../repositories/todo.repository";
-import type { AppContext } from "../context/app-context";
-import type { ILogger } from "../infrastructure/logging";
-import { TodoServiceError } from "./errors";
+import type { CreateTodoData, ITodoRepository, Todo, UpdateTodoData } from "./todo.repository";
+import type { AppContext } from "../../context/app-context";
+import type { ILogger } from "../../infrastructure/logging";
+import { TodoServiceError } from "./todo.errors";
 
 export class TodoService {
   private logger: ILogger
