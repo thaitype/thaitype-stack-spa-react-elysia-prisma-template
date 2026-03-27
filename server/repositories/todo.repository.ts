@@ -1,5 +1,6 @@
 import type { PrismaClient } from "../../generated/client/client.ts";
 import type { AppContext } from "../context/app-context.ts";
+import type { ILogger } from "../infrastructure/logging/index.ts";
 
 // Domain model
 export interface Todo {
@@ -35,28 +36,32 @@ export interface ITodoRepository {
 
 // Prisma implementation
 export class PrismaTodoRepository implements ITodoRepository {
+  private logger: ILogger
+
   constructor(
-    private appContext: AppContext,
+    appContext: AppContext,
     private prisma: PrismaClient,
-  ) {}
+  ) {
+    this.logger = appContext.logger
+  }
 
   findAll(): Promise<Todo[]> {
-    this.appContext.logger.debug("PrismaTodoRepository.findAll");
+    this.logger.debug("PrismaTodoRepository.findAll");
     return this.prisma.todo.findMany();
   }
 
   findById(id: string): Promise<Todo | null> {
-    this.appContext.logger.debug("PrismaTodoRepository.findById", { id });
+    this.logger.debug("PrismaTodoRepository.findById", { id });
     return this.prisma.todo.findUnique({ where: { id } });
   }
 
   findByUserId(userId: string): Promise<Todo[]> {
-    this.appContext.logger.debug("PrismaTodoRepository.findByUserId", { userId });
+    this.logger.debug("PrismaTodoRepository.findByUserId", { userId });
     return this.prisma.todo.findMany({ where: { userId } });
   }
 
   create(userId: string, data: CreateTodoData): Promise<Todo> {
-    this.appContext.logger.info("PrismaTodoRepository.create", { userId, title: data.title });
+    this.logger.info("PrismaTodoRepository.create", { userId, title: data.title });
     return this.prisma.todo.create({
       data: {
         title: data.title,
@@ -67,7 +72,7 @@ export class PrismaTodoRepository implements ITodoRepository {
   }
 
   async update(id: string, data: UpdateTodoData): Promise<Todo | null> {
-    this.appContext.logger.info("PrismaTodoRepository.update", { id });
+    this.logger.info("PrismaTodoRepository.update", { id });
     try {
       return await this.prisma.todo.update({ where: { id }, data });
     } catch {
@@ -76,7 +81,7 @@ export class PrismaTodoRepository implements ITodoRepository {
   }
 
   async delete(id: string): Promise<boolean> {
-    this.appContext.logger.info("PrismaTodoRepository.delete", { id });
+    this.logger.info("PrismaTodoRepository.delete", { id });
     try {
       await this.prisma.todo.delete({ where: { id } });
       return true;

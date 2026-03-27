@@ -140,6 +140,7 @@ if (isProduction) {
   app = baseApp.listen(3001);
 }
 
-container.appContext.logger.info("Server running", { port: app.server?.port });
+const log = container.appContext.logger;
+log.info("Server running", { port: app.server?.port });
 
 export type App = typeof baseApp;
