@@ -8,5 +8,5 @@
 
 ## Batch 2: Auth + Frontend (planned, not started)
 
-- [ ] task-4: Integrate Better Auth with Elysia and Prisma
-- [ ] task-5: Install shadcn/ui and build Todo frontend components
+- [x] task-4: Integrate Better Auth with Elysia and Prisma
+- [x] task-5: Install shadcn/ui and build Todo frontend components

@@ -41,7 +41,7 @@ const app = new Elysia()
   .get("/api/health", () => ({ status: "ok" }))
 
   // --- Better Auth handler: handles all /api/auth/* routes ---
-  .all("/api/auth/*", ({ request }) => auth.handler(request))
+  .mount(auth.handler)
 
   // --- Todo routes (session-protected) ---
   .get("/api/todos", async ({ todoService, request }) => {
