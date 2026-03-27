@@ -4,18 +4,15 @@ import { Button } from "#/components/ui/button"
 import { Input } from "#/components/ui/input"
 import { Textarea } from "#/components/ui/textarea"
 import { Card, CardContent } from "#/components/ui/card"
-import { createTodo } from "#/lib/api"
+import { useCreateTodo } from "#/hooks/useTodos"
 
-interface AddTodoFormProps {
-  onSuccess?: () => void
-}
-
-export function AddTodoForm({ onSuccess }: AddTodoFormProps) {
+export function AddTodoForm() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const createTodo = useCreateTodo()
 
   const handleExpand = useCallback(() => {
     setIsExpanded(true)
@@ -34,24 +31,20 @@ export function AddTodoForm({ onSuccess }: AddTodoFormProps) {
       return
     }
 
-    setIsSubmitting(true)
     setError(null)
 
     try {
-      await createTodo({
+      await createTodo.mutateAsync({
         title: title.trim(),
         description: description.trim() || undefined,
       })
       setTitle("")
       setDescription("")
       setIsExpanded(false)
-      onSuccess?.()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create todo")
-    } finally {
-      setIsSubmitting(false)
     }
-  }, [title, description, onSuccess])
+  }, [title, description, createTodo])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -134,7 +127,7 @@ export function AddTodoForm({ onSuccess }: AddTodoFormProps) {
               variant="outline"
               size="sm"
               onClick={handleCancel}
-              disabled={isSubmitting}
+              disabled={createTodo.isPending}
             >
               <XIcon className="size-3.5" />
               Cancel
@@ -142,10 +135,10 @@ export function AddTodoForm({ onSuccess }: AddTodoFormProps) {
             <Button
               size="sm"
               onClick={() => void handleSubmit()}
-              disabled={isSubmitting}
+              disabled={createTodo.isPending}
             >
               <PlusIcon className="size-3.5" />
-              {isSubmitting ? "Adding..." : "Add Todo"}
+              {createTodo.isPending ? "Adding..." : "Add Todo"}
             </Button>
           </div>
         </div>

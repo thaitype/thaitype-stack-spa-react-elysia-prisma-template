@@ -1,35 +1,16 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState } from "react"
 import { ClipboardListIcon, RefreshCwIcon } from "lucide-react"
 import { Button } from "#/components/ui/button"
 import { Badge } from "#/components/ui/badge"
 import { AddTodoForm } from "#/components/AddTodoForm"
 import { TodoItem } from "#/components/TodoItem"
-import { getTodos, type Todo } from "#/lib/api"
+import { useGetTodos, type Todo } from "#/hooks/useTodos"
 
 type FilterType = "all" | "pending" | "completed"
 
 export function TodoList() {
-  const [todos, setTodos] = useState<Todo[]>([])
   const [filter, setFilter] = useState<FilterType>("all")
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchTodos = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await getTodos()
-      setTodos(data)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load todos")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void fetchTodos()
-  }, [fetchTodos])
+  const { data: todos = [] as Todo[], isLoading, error, refetch } = useGetTodos()
 
   const filteredTodos = todos.filter((todo) => {
     switch (filter) {
@@ -57,12 +38,14 @@ export function TodoList() {
   if (error) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900/40 dark:bg-red-950/20">
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p className="text-sm text-red-600 dark:text-red-400">
+          {error instanceof Error ? error.message : "Failed to load todos"}
+        </p>
         <Button
           variant="outline"
           size="sm"
           className="mt-2"
-          onClick={() => void fetchTodos()}
+          onClick={() => void refetch()}
         >
           <RefreshCwIcon className="size-3.5" />
           Retry
@@ -84,7 +67,7 @@ export function TodoList() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => void fetchTodos()}
+          onClick={() => void refetch()}
           disabled={isLoading}
         >
           <RefreshCwIcon className="size-3.5" />
@@ -106,7 +89,7 @@ export function TodoList() {
       </div>
 
       {/* Add todo form */}
-      <AddTodoForm onSuccess={() => void fetchTodos()} />
+      <AddTodoForm />
 
       {/* Filter tabs */}
       {todos.length > 0 && (
@@ -160,7 +143,6 @@ export function TodoList() {
             <TodoItem
               key={todo.id}
               todo={todo}
-              onUpdate={() => void fetchTodos()}
             />
           ))}
         </div>

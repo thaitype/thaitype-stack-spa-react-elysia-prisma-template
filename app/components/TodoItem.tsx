@@ -17,34 +17,29 @@ import {
   DialogHeader,
   DialogTitle,
 } from "#/components/ui/dialog"
-import { updateTodo, deleteTodo, type Todo } from "#/lib/api"
+import { useUpdateTodo, useDeleteTodo, type Todo } from "#/hooks/useTodos"
 
 interface TodoItemProps {
   todo: Todo
-  onUpdate?: () => void
 }
 
-export function TodoItem({ todo, onUpdate }: TodoItemProps) {
+export function TodoItem({ todo }: TodoItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [editTitle, setEditTitle] = useState(todo.title)
   const [editDescription, setEditDescription] = useState(todo.description ?? "")
-  const [isToggling, setIsToggling] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const updateTodo = useUpdateTodo()
+  const deleteTodo = useDeleteTodo()
+
   const handleToggle = useCallback(async () => {
-    setIsToggling(true)
     try {
-      await updateTodo(todo.id, { completed: !todo.completed })
-      onUpdate?.()
+      await updateTodo.mutateAsync({ id: todo.id, completed: !todo.completed })
     } catch {
       // silently fail — could add a toast here
-    } finally {
-      setIsToggling(false)
     }
-  }, [todo.id, todo.completed, onUpdate])
+  }, [todo.id, todo.completed, updateTodo])
 
   const handleEditOpen = useCallback(() => {
     setEditTitle(todo.title)
@@ -63,34 +58,27 @@ export function TodoItem({ todo, onUpdate }: TodoItemProps) {
       setError("Title is required")
       return
     }
-    setIsSaving(true)
     setError(null)
     try {
-      await updateTodo(todo.id, {
+      await updateTodo.mutateAsync({
+        id: todo.id,
         title: editTitle.trim(),
         description: editDescription.trim() || null,
       })
       setIsEditing(false)
-      onUpdate?.()
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update todo")
-    } finally {
-      setIsSaving(false)
     }
-  }, [todo.id, editTitle, editDescription, onUpdate])
+  }, [todo.id, editTitle, editDescription, updateTodo])
 
   const handleDelete = useCallback(async () => {
-    setIsDeleting(true)
     try {
-      await deleteTodo(todo.id)
+      await deleteTodo.mutateAsync(todo.id)
       setIsDeleteDialogOpen(false)
-      onUpdate?.()
     } catch {
       // silently fail
-    } finally {
-      setIsDeleting(false)
     }
-  }, [todo.id, onUpdate])
+  }, [todo.id, deleteTodo])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -143,7 +131,7 @@ export function TodoItem({ todo, onUpdate }: TodoItemProps) {
             variant="outline"
             size="sm"
             onClick={handleEditCancel}
-            disabled={isSaving}
+            disabled={updateTodo.isPending}
           >
             <XIcon className="size-3.5" />
             Cancel
@@ -151,10 +139,10 @@ export function TodoItem({ todo, onUpdate }: TodoItemProps) {
           <Button
             size="sm"
             onClick={() => void handleEditSave()}
-            disabled={isSaving}
+            disabled={updateTodo.isPending}
           >
             <CheckIcon className="size-3.5" />
-            {isSaving ? "Saving..." : "Save"}
+            {updateTodo.isPending ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>
@@ -167,7 +155,7 @@ export function TodoItem({ todo, onUpdate }: TodoItemProps) {
         <Checkbox
           checked={todo.completed}
           onCheckedChange={() => void handleToggle()}
-          disabled={isToggling}
+          disabled={updateTodo.isPending}
           className="mt-0.5 shrink-0"
           id={`todo-check-${todo.id}`}
         />
@@ -242,16 +230,16 @@ export function TodoItem({ todo, onUpdate }: TodoItemProps) {
             <Button
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
-              disabled={isDeleting}
+              disabled={deleteTodo.isPending}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={() => void handleDelete()}
-              disabled={isDeleting}
+              disabled={deleteTodo.isPending}
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {deleteTodo.isPending ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>
