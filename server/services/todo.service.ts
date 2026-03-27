@@ -1,14 +1,20 @@
 import type { CreateTodoData, ITodoRepository, Todo, UpdateTodoData } from "../repositories/todo.repository";
+import type { AppContext } from "../context/app-context";
 import { TodoServiceError } from "./errors";
 
 export class TodoService {
-  constructor(private repo: ITodoRepository) {}
+  constructor(
+    private appContext: AppContext,
+    private repo: ITodoRepository,
+  ) {}
 
   getAll(userId: string): Promise<Todo[]> {
+    this.appContext.logger.debug("TodoService.getAll", { userId });
     return this.repo.findByUserId(userId);
   }
 
   async getById(id: string, userId: string): Promise<Todo> {
+    this.appContext.logger.debug("TodoService.getById", { id, userId });
     const todo = await this.repo.findById(id);
     if (!todo) throw new TodoServiceError("Todo not found", 404);
     if (todo.userId !== userId) throw new TodoServiceError("Todo not found", 404);
@@ -16,6 +22,7 @@ export class TodoService {
   }
 
   create(userId: string, data: CreateTodoData): Promise<Todo> {
+    this.appContext.logger.info("TodoService.create", { userId, title: data.title });
     if (!data.title || data.title.trim().length === 0) {
       throw new TodoServiceError("Title is required", 400);
     }
@@ -23,6 +30,7 @@ export class TodoService {
   }
 
   async update(id: string, userId: string, data: UpdateTodoData): Promise<Todo> {
+    this.appContext.logger.info("TodoService.update", { id, userId });
     const todo = await this.repo.findById(id);
     if (!todo) throw new TodoServiceError("Todo not found", 404);
     if (todo.userId !== userId) throw new TodoServiceError("Todo not found", 404);
@@ -33,6 +41,7 @@ export class TodoService {
   }
 
   async toggle(id: string, userId: string): Promise<Todo> {
+    this.appContext.logger.info("TodoService.toggle", { id, userId });
     const todo = await this.repo.findById(id);
     if (!todo) throw new TodoServiceError("Todo not found", 404);
     if (todo.userId !== userId) throw new TodoServiceError("Todo not found", 404);
@@ -43,6 +52,7 @@ export class TodoService {
   }
 
   async delete(id: string, userId: string): Promise<void> {
+    this.appContext.logger.info("TodoService.delete", { id, userId });
     const todo = await this.repo.findById(id);
     if (!todo) throw new TodoServiceError("Todo not found", 404);
     if (todo.userId !== userId) throw new TodoServiceError("Todo not found", 404);

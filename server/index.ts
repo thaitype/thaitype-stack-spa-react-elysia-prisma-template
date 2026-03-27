@@ -2,17 +2,14 @@ import { Elysia, t } from "elysia";
 import { staticPlugin } from "@elysiajs/static";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { prisma } from "./lib/prisma";
 import { auth } from "./lib/auth";
-import { PrismaTodoRepository } from "./repositories/todo.repository";
-import { TodoService } from "./services/todo.service";
 import { TodoServiceError } from "./services/errors";
+import { createContainer } from "./context/app-context";
 
 const isProduction = process.env.NODE_ENV === "production";
 
-// --- Composition Root: wire dependencies here ---
-const todoRepo = new PrismaTodoRepository(prisma);
-const todoService = new TodoService(todoRepo);
+// --- Composition Root: wire all dependencies via container ---
+const container = createContainer();
 
 // --- Auth guard: extracts session from request, returns 401 if unauthenticated ---
 async function getSessionUser(request: Request): Promise<{ id: string } | null> {
@@ -32,8 +29,8 @@ const baseApp = new Elysia()
     }
   })
 
-  // inject service via Elysia's built-in DI
-  .decorate("todoService", todoService)
+  // inject container via Elysia's built-in DI
+  .decorate("container", container)
 
   // --- health check ---
   .get("/api/health", () => ({ status: "ok" }))
@@ -42,7 +39,7 @@ const baseApp = new Elysia()
   .mount(auth.handler)
 
   // --- Todo routes (session-protected) ---
-  .get("/api/todos", async ({ todoService, request }) => {
+  .get("/api/todos", async ({ container, request }) => {
     const user = await getSessionUser(request);
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -50,12 +47,12 @@ const baseApp = new Elysia()
         headers: { "Content-Type": "application/json" },
       });
     }
-    return todoService.getAll(user.id);
+    return container.todoService.getAll(user.id);
   })
 
   .get(
     "/api/todos/:id",
-    async ({ todoService, params: { id }, request }) => {
+    async ({ container, params: { id }, request }) => {
       const user = await getSessionUser(request);
       if (!user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -63,7 +60,7 @@ const baseApp = new Elysia()
           headers: { "Content-Type": "application/json" },
         });
       }
-      return todoService.getById(id, user.id);
+      return container.todoService.getById(id, user.id);
     },
     {
       params: t.Object({ id: t.String() }),
@@ -72,7 +69,7 @@ const baseApp = new Elysia()
 
   .post(
     "/api/todos",
-    async ({ todoService, body, request }) => {
+    async ({ container, body, request }) => {
       const user = await getSessionUser(request);
       if (!user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -80,7 +77,7 @@ const baseApp = new Elysia()
           headers: { "Content-Type": "application/json" },
         });
       }
-      return todoService.create(user.id, body);
+      return container.todoService.create(user.id, body);
     },
     {
       body: t.Object({
@@ -92,7 +89,7 @@ const baseApp = new Elysia()
 
   .patch(
     "/api/todos/:id",
-    async ({ todoService, params: { id }, body, request }) => {
+    async ({ container, params: { id }, body, request }) => {
       const user = await getSessionUser(request);
       if (!user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -100,7 +97,7 @@ const baseApp = new Elysia()
           headers: { "Content-Type": "application/json" },
         });
       }
-      return todoService.update(id, user.id, body);
+      return container.todoService.update(id, user.id, body);
     },
     {
       params: t.Object({ id: t.String() }),
@@ -114,7 +111,7 @@ const baseApp = new Elysia()
 
   .delete(
     "/api/todos/:id",
-    async ({ todoService, params: { id }, request }) => {
+    async ({ container, params: { id }, request }) => {
       const user = await getSessionUser(request);
       if (!user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -122,7 +119,7 @@ const baseApp = new Elysia()
           headers: { "Content-Type": "application/json" },
         });
       }
-      await todoService.delete(id, user.id);
+      await container.todoService.delete(id, user.id);
       return { success: true };
     },
     {
@@ -143,6 +140,6 @@ if (isProduction) {
   app = baseApp.listen(3001);
 }
 
-console.log(`Server running at http://localhost:${app.server?.port}`);
+container.appContext.logger.info("Server running", { port: app.server?.port });
 
 export type App = typeof baseApp;
