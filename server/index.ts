@@ -2,7 +2,7 @@ import { Elysia, t } from "elysia";
 import { staticPlugin } from "@elysiajs/static";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { auth } from "./lib/auth";
+import { authPlugin } from "./lib/auth-plugin";
 import { createContainer } from "./context/app-context";
 
 const isProduction = process.env.NODE_ENV === "production";
@@ -27,16 +27,7 @@ const baseApp = new Elysia()
   .get("/api/health", () => ({ status: "ok" }))
 
   // --- Better Auth handler + auth macro ---
-  .mount(auth.handler)
-  .macro({
-    withAuth: {
-      async resolve({ status, request: { headers } }) {
-        const session = await auth.api.getSession({ headers });
-        if (!session) return status(401);
-        return { user: session.user };
-      },
-    },
-  })
+  .use(authPlugin)
 
   // --- Todo routes (session-protected via { withAuth: true }) ---
   .get("/api/todos", ({ container, user }) => {
