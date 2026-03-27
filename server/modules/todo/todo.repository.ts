@@ -1,6 +1,6 @@
-import type { PrismaClient, Todo } from "../../../generated/client/client.ts";
-import type { AppContext } from "../../context/app-context.ts";
-import type { ILogger } from "../../infrastructure/logging/index.ts";
+import type { PrismaClient, Todo } from "#generated/client/client.ts";
+import type { AppContext } from "#server/context/app-context.ts";
+import type { ILogger } from "#server/infrastructure/logging/index.ts";
 
 export type { Todo };
 

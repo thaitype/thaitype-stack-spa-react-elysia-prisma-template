@@ -6,6 +6,8 @@
   "private": true,
   "type": "module",
   "imports": {
+    "#server/*": "./server/*",
+    "#generated/*": "./generated/*",
     "#/*": "./app/*"
   },
   "scripts": {

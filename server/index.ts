@@ -2,9 +2,9 @@ import { Elysia } from "elysia";
 import { staticPlugin } from "@elysiajs/static";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { authPlugin } from "./lib/auth-plugin";
-import { createContainer } from "./context/app-context";
-import { createTodoRoutes } from "./modules/todo";
+import { authPlugin } from "#server/lib/auth-plugin";
+import { createContainer } from "#server/context/app-context";
+import { createTodoRoutes } from "#server/modules/todo";
 
 const isProduction = process.env.NODE_ENV === "production";
 

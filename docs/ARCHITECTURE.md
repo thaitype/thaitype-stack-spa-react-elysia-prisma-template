@@ -74,6 +74,18 @@ prisma/schema.prisma
 └── .chief/                        # Planning & task tracking
 ```
 
+## Path Aliases
+
+Configured in both `package.json` (`imports`) and `tsconfig.json` (`paths`):
+
+| Alias | Resolves to | Usage |
+|-------|------------|-------|
+| `#server/*` | `./server/*` | Server-side imports: `import { prisma } from '#server/lib/prisma'` |
+| `#generated/*` | `./generated/*` | Generated code: `import { TodoPlain } from '#generated/prismabox/Todo'` |
+| `#/*` | `./app/*` | Frontend imports: `import { api } from '#/lib/eden'` |
+
+Avoid relative paths like `../../../generated/` — always use aliases.
+
 ## Backend
 
 ### Module Structure
@@ -190,7 +202,7 @@ Elysia deduplicates plugins by `name` — safe to `.use(authPlugin)` in multiple
 Route body/response schemas come from prismabox. Derive variants using `t.Pick` / `t.Partial`:
 
 ```ts
-import { TodoPlain, TodoPlainInputCreate, TodoPlainInputUpdate } from '../../../generated/prismabox/Todo'
+import { TodoPlain, TodoPlainInputCreate, TodoPlainInputUpdate } from '#generated/prismabox/Todo'
 
 const CreateTodoBody = t.Pick(TodoPlainInputCreate, ['title', 'description'])
 const UpdateTodoBody = TodoPlainInputUpdate

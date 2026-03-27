@@ -1,6 +1,6 @@
 import type { CreateTodoData, ITodoRepository, Todo, UpdateTodoData } from "./todo.repository";
-import type { AppContext } from "../../context/app-context";
-import type { ILogger } from "../../infrastructure/logging";
+import type { AppContext } from "#server/context/app-context";
+import type { ILogger } from "#server/infrastructure/logging";
 import { TodoServiceError } from "./todo.errors";
 
 export class TodoService {

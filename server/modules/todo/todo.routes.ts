@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia'
-import { authPlugin } from '../../lib/auth-plugin'
-import type { ServiceContainer } from '../../context/app-context'
-import { TodoPlain, TodoPlainInputCreate, TodoPlainInputUpdate } from '../../../generated/prismabox/Todo'
+import { authPlugin } from '#server/lib/auth-plugin'
+import type { ServiceContainer } from '#server/context/app-context'
+import { TodoPlain, TodoPlainInputCreate, TodoPlainInputUpdate } from '#generated/prismabox/Todo'
 
 const CreateTodoBody = t.Pick(TodoPlainInputCreate, ['title', 'description'])
 const UpdateTodoBody = TodoPlainInputUpdate

@@ -417,10 +417,11 @@ generated/                         # Auto-generated (client + prismabox)
 ### Important Development Rules
 
 1. **Types from Prisma**: Never declare manual interfaces for Prisma-managed models. Use Prisma-generated types. Exception: data stored outside Prisma (external APIs, etc.)
-2. **Validation from prismabox**: Never write manual `t.Object({...})` for model schemas. Import from `generated/prismabox/` and use `t.Pick` / `t.Partial`.
+2. **Validation from prismabox**: Never write manual `t.Object({...})` for model schemas. Import from `#generated/prismabox/` and use `t.Pick` / `t.Partial`.
 3. **Frontend types from Eden**: Never duplicate server types on frontend. `Todo` type is derived from `Treaty.Data<>`.
 4. **Auth via macro**: Use `{ withAuth: true }` on routes. Never inline auth checks in handlers.
 5. **Logger via constructor**: Services/repos receive `appContext`, destructure `this.logger = appContext.logger`. Never use `console.log`.
 6. **Container for DI**: Services are wired in `createContainer()`. Container is passed to route factories. Never use Elysia `.decorate()` for service injection.
 7. **Module isolation**: Each backend module is self-contained in `server/modules/<name>/`. Routes are Elysia plugins mounted via `.use()`.
 8. **Feature isolation**: Each frontend feature is self-contained in `app/features/<name>/`. Shared components stay in `app/components/`.
+9. **Path aliases**: Use `#server/*` for server imports, `#generated/*` for generated code, `#/*` for frontend. Never use deep relative paths like `../../../`.
