@@ -1,5 +1,4 @@
 import { Elysia, t } from "elysia";
-import { cors } from "@elysiajs/cors";
 import { prisma } from "./lib/prisma";
 import { auth } from "./lib/auth";
 import { PrismaTodoRepository } from "./repositories/todo.repository";
@@ -18,12 +17,6 @@ async function getSessionUser(request: Request): Promise<{ id: string } | null> 
 }
 
 const app = new Elysia()
-  .use(
-    cors({
-      origin: "http://localhost:3000",
-      credentials: true,
-    }),
-  )
   .error({ TODO_ERROR: TodoServiceError })
   .onError(({ error, code }) => {
     if (code === "TODO_ERROR") {
