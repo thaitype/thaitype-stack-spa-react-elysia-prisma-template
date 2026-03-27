@@ -1,5 +1,8 @@
 {
-  "name": "my-app",
+  "name": "thaitype-stack-spa-react-elysia-prisma-template",
+  "description": "Full-stack Todo app template with React SPA, Elysia, Prisma, and Better Auth",
+  "version": "1.0.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "imports": {
