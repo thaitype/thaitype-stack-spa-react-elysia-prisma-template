@@ -1,15 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import type { Treaty } from '@elysiajs/eden'
 import { api } from '#/lib/eden'
 
-export interface Todo {
-  id: string
-  title: string
-  description: string | null
-  completed: boolean
-  createdAt: string
-  updatedAt: string
-  userId: string
-}
+// Derive Todo type from Eden's inferred return type — no manual interface needed
+type GetTodosResponse = Treaty.Data<ReturnType<typeof api.api.todos.get>>
+export type Todo = GetTodosResponse extends (infer T)[] ? T : never
 
 export function useGetTodos() {
   return useQuery({
@@ -17,7 +12,7 @@ export function useGetTodos() {
     queryFn: async () => {
       const { data, error } = await api.api.todos.get()
       if (error) throw error
-      return data as unknown as Todo[]
+      return data
     },
   })
 }
@@ -28,7 +23,7 @@ export function useCreateTodo() {
     mutationFn: async (body: { title: string; description?: string }) => {
       const { data, error } = await api.api.todos.post(body)
       if (error) throw error
-      return data as unknown as Todo
+      return data
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
   })
@@ -45,13 +40,12 @@ export function useUpdateTodo() {
     }) => {
       const { id, description, ...rest } = params
       const body: { title?: string; description?: string; completed?: boolean } = { ...rest }
-      // Server schema only accepts string | undefined for description (not null)
       if (description !== undefined) {
         body.description = description ?? undefined
       }
       const { data, error } = await api.api.todos({ id }).patch(body)
       if (error) throw error
-      return data as unknown as Todo
+      return data
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['todos'] }),
   })
