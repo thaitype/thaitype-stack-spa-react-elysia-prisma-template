@@ -1,9 +1,14 @@
 import { Elysia, t } from "elysia";
+import { staticPlugin } from "@elysiajs/static";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { prisma } from "./lib/prisma";
 import { auth } from "./lib/auth";
 import { PrismaTodoRepository } from "./repositories/todo.repository";
 import { TodoService } from "./services/todo.service";
 import { TodoServiceError } from "./services/errors";
+
+const isProduction = process.env.NODE_ENV === "production";
 
 // --- Composition Root: wire dependencies here ---
 const todoRepo = new PrismaTodoRepository(prisma);
@@ -16,7 +21,7 @@ async function getSessionUser(request: Request): Promise<{ id: string } | null> 
   return session.user;
 }
 
-const app = new Elysia()
+const baseApp = new Elysia()
   .error({ TODO_ERROR: TodoServiceError })
   .onError(({ error, code }) => {
     if (code === "TODO_ERROR") {
@@ -123,10 +128,21 @@ const app = new Elysia()
     {
       params: t.Object({ id: t.String() }),
     },
-  )
+  );
 
-  .listen(3001);
+// --- Static file serving + SPA fallback (production only) ---
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let app: Elysia<any, any, any, any, any, any, any>;
+if (isProduction) {
+  const indexHtml = readFileSync(join(process.cwd(), "app/dist/index.html"));
+  app = baseApp
+    .use(await staticPlugin({ assets: "app/dist", prefix: "/" }))
+    .get("/*", () => new Response(indexHtml, { headers: { "Content-Type": "text/html" } }))
+    .listen(3001);
+} else {
+  app = baseApp.listen(3001);
+}
 
 console.log(`Server running at http://localhost:${app.server?.port}`);
 
-export type App = typeof app;
+export type App = typeof baseApp;
