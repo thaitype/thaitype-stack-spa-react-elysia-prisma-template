@@ -10,6 +10,7 @@ const isProduction = process.env.NODE_ENV === "production";
 
 // --- Composition Root: wire all dependencies via container ---
 const container = createContainer();
+const log = container.appContext.logger;
 
 // --- Auth guard: extracts session from request, returns 401 if unauthenticated ---
 async function getSessionUser(request: Request): Promise<{ id: string } | null> {
@@ -27,6 +28,11 @@ const baseApp = new Elysia()
         headers: { "Content-Type": "application/json" },
       });
     }
+    log.error("Unhandled error", {
+      code,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
   })
 
   // inject container via Elysia's built-in DI
@@ -140,7 +146,6 @@ if (isProduction) {
   app = baseApp.listen(3001);
 }
 
-const log = container.appContext.logger;
 log.info("Server running", { port: app.server?.port });
 
 export type App = typeof baseApp;
