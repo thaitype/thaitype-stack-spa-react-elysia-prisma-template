@@ -29,7 +29,7 @@ const baseApp = new Elysia()
   // --- Better Auth handler + auth macro ---
   .mount(auth.handler)
   .macro({
-    auth: {
+    withAuth: {
       async resolve({ status, request: { headers } }) {
         const session = await auth.api.getSession({ headers });
         if (!session) return status(401);
@@ -38,10 +38,10 @@ const baseApp = new Elysia()
     },
   })
 
-  // --- Todo routes (session-protected via { auth: true }) ---
+  // --- Todo routes (session-protected via { withAuth: true }) ---
   .get("/api/todos", ({ container, user }) => {
     return container.todoService.getAll(user.id);
-  }, { auth: true })
+  }, { withAuth: true })
 
   .get(
     "/api/todos/:id",
@@ -49,7 +49,7 @@ const baseApp = new Elysia()
       return container.todoService.getById(id, user.id);
     },
     {
-      auth: true,
+      withAuth: true,
       params: t.Object({ id: t.String() }),
     },
   )
@@ -60,7 +60,7 @@ const baseApp = new Elysia()
       return container.todoService.create(user.id, body);
     },
     {
-      auth: true,
+      withAuth: true,
       body: t.Object({
         title: t.String({ minLength: 1 }),
         description: t.Optional(t.String()),
@@ -74,7 +74,7 @@ const baseApp = new Elysia()
       return container.todoService.update(id, user.id, body);
     },
     {
-      auth: true,
+      withAuth: true,
       params: t.Object({ id: t.String() }),
       body: t.Object({
         title: t.Optional(t.String({ minLength: 1 })),
@@ -91,7 +91,7 @@ const baseApp = new Elysia()
       return { success: true };
     },
     {
-      auth: true,
+      withAuth: true,
       params: t.Object({ id: t.String() }),
     },
   );
