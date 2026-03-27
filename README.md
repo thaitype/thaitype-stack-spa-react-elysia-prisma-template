@@ -191,7 +191,7 @@ BETTER_AUTH_URL="https://yourdomain.com"
 
 ## Claude Code / Chief Agent Framework
 
-This template ships with a **Chief Agent Framework** for AI-driven development using [Claude Code](https://claude.ai/code). It includes:
+This template ships with a **[Chief Agent Framework](https://github.com/thaitype/chief-agent-framework)** for AI-driven development using [Claude Code](https://claude.ai/code). It includes:
 
 - **`.chief/`** — Planning, milestones, task specs, and rules for autonomous agent execution
 - **`CLAUDE.md`** — Project rules, architecture context, and development commands that Claude reads
